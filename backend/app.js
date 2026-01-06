@@ -20,6 +20,9 @@ app.use('/api/v1/',products);
 app.use('/api/v1/',auth);
 app.use('/api/v1/',order);
 app.use('/api/v1/',payment);
+app.use('/', (req,res)=>{
+    res.send("Hello from ecommerce api")
+})
 
 if(process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, '../frontend/build')));
