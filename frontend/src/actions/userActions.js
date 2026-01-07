@@ -50,7 +50,9 @@ export const login = (email, password) => async (dispatch) => {
             const { data }  = await api.post(`/api/v1/login`,{email,password});
             dispatch(loginSuccess(data))
         } catch (error) {
-            dispatch(loginFail(error.response.data.message))
+            dispatch(loginFail(
+                error.response?.data?.message || error.message
+            ));
         }
 
 }
@@ -77,19 +79,17 @@ export const register = (userData) => async (dispatch) => {
 
 }
 
-export const loadUser =  async (dispatch) => {
-
+export const loadUser = () => async (dispatch) => {
     try {
-        dispatch(loadUserRequest())
-       
-
-        const { data }  = await api.get(`/api/v1/myprofile`);
-        dispatch(loadUserSuccess(data))
+        dispatch(loadUserRequest());
+        const { data } = await api.get(`/api/v1/myprofile`);
+        dispatch(loadUserSuccess(data));
     } catch (error) {
-        dispatch(loadUserFail(error.response.data.message))
+        dispatch(loadUserFail(
+            error.response?.data?.message || error.message
+        ));
     }
-
-}
+};
 
 export const logout =  async (dispatch) => {
 
@@ -97,7 +97,7 @@ export const logout =  async (dispatch) => {
         await api.get(`/api/v1/logout`);
         dispatch(logoutSuccess())
     } catch (error) {
-        dispatch(logoutFail)
+        dispatch(logoutFail())
     }
 
 }
