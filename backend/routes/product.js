@@ -1,113 +1,119 @@
 const express = require("express");
 const router = express.Router();
-const path = require("path");
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const {
-    getProducts,
-    newProduct,
-    getSingleProduct,
-    updateProduct,
-    deleteProduct,
-    createReview,
-    getReviews,
-    deleteReview,
-    getAdminProducts
+  getProducts,
+  newProduct,
+  getSingleProduct,
+  updateProduct,
+  deleteProduct,
+  createReview,
+  getReviews,
+  deleteReview,
+  getAdminProducts,
 } = require("../controllers/productController");
 
 const {
-    isAuthenticatedUser,
-    authorizeRoles
+  isAuthenticatedUser,
+  authorizeRoles,
 } = require("../middlewares/authenticate");
 
-/* ==========================
-   MULTER CONFIG
-========================== */
+
+// ================================
+// MULTER CONFIG (SAFE)
+// ================================
+
+// Ensure upload directory exists (important for Render)
+const uploadDir = path.join(__dirname, "..", "uploads", "product");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, "..", "uploads/product"));
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
 });
 
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"), false);
+  }
+};
 
-/* ==========================
-   PUBLIC ROUTES
-========================== */
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
 
-// GET ALL PRODUCTS
-// /api/v1/products
+
+// ================================
+// PUBLIC ROUTES
+// ================================
+
 router.get("/products", getProducts);
 
-// GET SINGLE PRODUCT
-// /api/v1/product/:id
 router.get("/product/:id", getSingleProduct);
 
-// CREATE / UPDATE REVIEW
-// /api/v1/review
 router.put("/review", isAuthenticatedUser, createReview);
 
-/* ==========================
-   ADMIN ROUTES
-========================== */
 
-// CREATE PRODUCT
-// /api/v1/admin/product/new
+// ================================
+// ADMIN ROUTES
+// ================================
+
 router.post(
-    "/admin/product/new",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    upload.array("images"),
-    newProduct
+  "/admin/product/new",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  upload.array("images", 5),
+  newProduct
 );
 
-// GET ALL PRODUCTS (ADMIN)
-// /api/v1/admin/products
 router.get(
-    "/admin/products",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    getAdminProducts
+  "/admin/products",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  getAdminProducts
 );
 
-// UPDATE PRODUCT
-// /api/v1/admin/product/:id
 router.put(
-    "/admin/product/:id",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    upload.array("images"),
-    updateProduct
+  "/admin/product/:id",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  upload.array("images", 5),
+  updateProduct
 );
 
-// DELETE PRODUCT
-// /api/v1/admin/product/:id
 router.delete(
-    "/admin/product/:id",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    deleteProduct
+  "/admin/product/:id",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  deleteProduct
 );
 
-// GET REVIEWS
-// /api/v1/admin/reviews
 router.get(
-    "/admin/reviews",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    getReviews
+  "/admin/reviews",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  getReviews
 );
 
-// DELETE REVIEW
-// /api/v1/admin/review
 router.delete(
-    "/admin/review",
-    isAuthenticatedUser,
-    authorizeRoles("admin"),
-    deleteReview
+  "/admin/review",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  deleteReview
 );
 
 module.exports = router;
