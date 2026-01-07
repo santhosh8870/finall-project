@@ -10,7 +10,11 @@ dotenv.config({ path: path.join(__dirname, "config/config.env") });
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:3000", "https://finall-project-3.onrender.com"],
+    credentials: true
+}));
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ROUTES
