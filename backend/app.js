@@ -30,7 +30,7 @@ app.use('/api/v1', payment);
 
 // HOME ROUTE (safe)
 app.get('/', (req, res) => {
-    res.send("Hello from ecommerce api");
+    res.send("Hello from Sanizz-ecommerce api");
 });
 
 // PRODUCTION – SERVE FRONTEND
